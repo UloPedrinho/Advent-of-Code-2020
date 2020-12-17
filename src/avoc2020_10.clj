@@ -29,89 +29,24 @@
             adapters)))
 
 ;; part2
-;; (0 1 4 5 6 7 10 11 12 15 16 19 22)
+(defn get-val
+  [ma pos]
+  (let [v (get ma pos)]
+    (if (nil? v)
+      0
+      v)))
 
-(defn get-index-next
-  [adapters pos increment]
-  (let [jolts (+ (first adapters) increment)]
-    (some #(if (= % jolts)
-             (.indexOf adapters jolts))
-          (rest adapters))))
-
-(defn get-next
-  [adapters pos increment]
-  (let [last-pos (if (<= (+ pos 4) (count adapters))
-                   (+ pos 4)
-                   (count adapters))
-        xs       (subvec adapters pos last-pos)
-        i        (get-index-next xs pos increment)
-        next     (and (not (nil? i)) (+ pos i))]
-    next))
-
-;; (0 1 4 5 6 7 10 11 12 15 16 19 22)
-;; "Elapsed time: 2470.688723 msecs"
-;; "Elapsed time: 998.695266 msecs"
-;; "Elapsed time: 572.23647 msecs"
-
-(defn no-name
-  [adapters next res]
-  (if (= next (dec (count adapters)))
-    (conj res true)                     ;OPTIMIZE
-    (for [x     [1 2 3]
-          :let  [i (get-next adapters next x)]
-          :when (not= i false)]
-      (no-name adapters i res))))
-
-
-(defn distinct-ways-of-arrange-adapters
+(defn number-of-arrange-adapters
   ""
   [input]
-  (let [outlet-joltage  0
-        lower-jolts     3
-        builtin-adapter (+ (apply max input) lower-jolts)
-        adapters        (vec (sort (into input [0 builtin-adapter])))]
-    (count (filter true? (flatten (no-name adapters 0 '()))))))
+  (let [adapters (vec (sort input))]
+    (last (last (sort  (reduce (fn [m jolt]
+                                 (let [j1    (get-val m (- jolt 1))
+                                       j2    (get-val m (- jolt 2))
+                                       j3    (get-val m (- jolt 3))
+                                       value (+ j1 j2 j3)]
+                                   (assoc m jolt value)))
+                               {0 1}
+                               adapters))))))
 
-(distinct-ways-of-arrange-adapters input)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (conj _ {:i (or (nil? i) (+ pos i)) :v (get adapters pos) :next next} )
-
-
-;; (defn no-name
-;;   [adapters pos]
-;;   (reduce (fn [_ n]
-;;             (let [last-pos (if (< = (+ pos 4) (count adapters))
-;;                              (+ pos 4)
-;;                              (count adapters))
-;;                   xs       (subvec adapters pos last-pos)
-;;                   i        (get-index-next xs pos n)
-;;                   next     (and (not (nil? i)) (get adapters (+ pos i)))]
-;;               (if (or (false? next) (nil? next))
-;;                 _
-;;                 (conj _ {:i (or (nil? i) (+ pos i)) :v (get adapters pos) :next next}))))
-;;           []
-;;           [1 2 3]))
-
-;; (defn no-name-
-;;   [adapters]
-;;   ;; TODO: (conj #{} [1 2 3 ...]}
-;;   (loop [pos 0]
-;;     (cond
-;;       (= pos (last adapters)) true
-;;       (nil? pos)              false
-;;       :else
-;;       (recur ))
-;;     ))
-
-
-;; (defn distinct-ways-of-arrange-adapters
-;;   ""
-;;   [input]
-;;   (let [outlet-joltage  0
-;;         lower-jolts     3
-;;         builtin-adapter (+ (apply max input) lower-jolts)
-;;         adapters        (vec (sort (into input [0 builtin-adapter])))]
-;;     adapters
-;;     )
-;;   )
+(number-of-arrange-adapters input)
